@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface EmployeeRepository extends MongoRepository<Employee, Integer>{
 
+//    public void findEmployeesBySalaryIsOrderBySalaryAsc();
 }

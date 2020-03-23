@@ -1,47 +1,52 @@
 package com.ionutradu.mongodb.employeeapp.documents;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import java.time.LocalDate;
 
 @Document(collection = "employee")
 public class Employee {
 
+    @Transient
+    public static final String SEQUENCE_NAME = "users_sequence";
+
     @Id
-    private int id;
+    private long id;
+
+    @NotBlank
+    @Size(max=32)
     private String firstName;
+
+    @NotBlank
+    @Size(max=32)
     private String lastName;
+
     private LocalDate dateOfBirth;
-    private int manager;
+    private int managerId;
     private double salary;
     private String department;
 
     public Employee() {
     }
 
-    public Employee(int id, String firstName, String lastName, LocalDate dateOfBirth, int manager, double salary, String department) {
-        this.id = id;
+    public Employee(String firstName, String lastName, LocalDate dateOfBirth, int managerId, double salary, String department) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.dateOfBirth = dateOfBirth;
-        this.manager = manager;
+        this.managerId = managerId;
         this.salary = salary;
         this.department = department;
     }
 
-    public void checkLenghtName(){
-        if (this.getFirstName().length() > 32 ||
-                this.getLastName().length() > 32) {
-            throw new RuntimeException("The maximum number of characters allowed for first name and last name fields is 32.");
-        }
-    }
-
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -69,12 +74,12 @@ public class Employee {
         this.dateOfBirth = dateOfBirth;
     }
 
-    public int getManager() {
-        return manager;
+    public int getManagerId() {
+        return managerId;
     }
 
-    public void setManager(int manager) {
-        this.manager = manager;
+    public void setManagerId(int managerId) {
+        this.managerId = managerId;
     }
 
     public double getSalary() {
@@ -100,7 +105,7 @@ public class Employee {
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
                 ", birthDate=" + dateOfBirth +
-                ", manager=" + manager +
+                ", managerId=" + managerId +
                 ", salary=" + salary +
                 ", department='" + department + '\'' +
                 '}';

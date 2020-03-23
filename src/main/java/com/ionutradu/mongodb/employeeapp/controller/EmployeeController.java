@@ -2,12 +2,15 @@ package com.ionutradu.mongodb.employeeapp.controller;
 
 import com.ionutradu.mongodb.employeeapp.documents.Employee;
 import com.ionutradu.mongodb.employeeapp.repository.EmployeeRepository;
+import com.ionutradu.mongodb.employeeapp.services.SequenceGeneratorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping("/employees")
 public class EmployeeController {
@@ -15,19 +18,28 @@ public class EmployeeController {
     @Autowired
     EmployeeRepository employeeRepository;
 
+    @Autowired
+    SequenceGeneratorService sequenceGeneratorService;
+
     @PostMapping()
     public String save(@RequestBody Employee employee){
-        employee.checkLenghtName();
+        checkManagerId(employee);
         employeeRepository.save(employee);
         return employee.toString();
     }
 
     @PutMapping()
-    public String update(@RequestBody Employee employee){
-        if(employeeRepository.existsById(employee.getId()) == false){
-            throw new RuntimeException("Employee id not found - " + employee.getId());
+    public String update(@Valid @RequestBody Employee employee){
+        long nextId = sequenceGeneratorService.generateSequence(Employee.SEQUENCE_NAME);
+        if(nextId == 0){
+            throw new RuntimeException("NEXT ID is - " + nextId);
         }
-        employee.checkLenghtName();
+        employee.setId(nextId);
+//        if(employeeRepository.existsById((int)employee.getId()) == false){
+//            throw new RuntimeException("Employee id not found - " + employee.getId());
+//        }
+        checkManagerId(employee);
+
         employeeRepository.save(employee);
         return employee + " has been updated";
     }
@@ -60,7 +72,7 @@ public class EmployeeController {
         return "DB clean";
     }
 
-    @PostMapping("/report/{department}")
+    @PostMapping("/reports/{department}")
     public String reports(@PathVariable String department){
 
         Employee employeeMaxSalary = maxSalaryFromDepartment(department);
@@ -72,14 +84,19 @@ public class EmployeeController {
     }
 
     public Employee checkManagerEmployees(){
-        List<Integer> list = employeeRepository.findAll().stream().map(x -> x.getManager()).collect(Collectors.toList());
-        long size = employeeRepository.findAll().stream().count();
+        List<Integer> list = employeeRepository.findAll()
+                .stream()
+                .map(Employee::getManagerId)
+                .collect(Collectors.toList());
+
+        long listSize = employeeRepository.findAll()
+                .size();
 
         // Insert all elements in hash
         Map<Integer, Integer> hp =
                 new HashMap<Integer, Integer>();
 
-        for(int i = 0; i < size; i++)
+        for(int i = 0; i < listSize; i++)
         {
             int key = list.get(i);
             if(hp.containsKey(key))
@@ -95,18 +112,18 @@ public class EmployeeController {
         }
 
         // find max frequency.
-        int max_count = 0, res = -1;
+        int max_count = 0, managerId = -1;
 
         for(Map.Entry<Integer, Integer> val : hp.entrySet())
         {
             if (max_count < val.getValue())
             {
-                res = val.getKey();
+                managerId = val.getKey();
                 max_count = val.getValue();
             }
         }
 
-        Employee manager = employeeRepository.findById(res).get();
+        Employee manager = employeeRepository.findById(managerId).get();
         return manager;
 
     }
@@ -118,5 +135,11 @@ public class EmployeeController {
         return employee;
     }
 
+    public void checkManagerId(Employee employee){
+        // managerID = 0 for employee who has no boss. Like a boos :)
+        if(!employeeRepository.existsById(employee.getManagerId()) && employee.getManagerId() != 0){
+            throw new RuntimeException("Manager ID not found - " + employee.getManagerId());
+        }
+    }
 
 }
