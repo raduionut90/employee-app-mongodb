@@ -14,6 +14,8 @@ public class Employee {
     @Transient
     public static final String SEQUENCE_NAME = "users_sequence";
 
+    private static long nextId = 0;
+
     @Id
     private long id;
 
@@ -40,6 +42,14 @@ public class Employee {
         this.managerId = managerId;
         this.salary = salary;
         this.department = department;
+    }
+
+    public static long getNextId() {
+        return nextId;
+    }
+
+    public static void setNextId(long nextId) {
+        Employee.nextId = nextId;
     }
 
     public long getId() {

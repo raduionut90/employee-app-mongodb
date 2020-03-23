@@ -2,7 +2,6 @@ package com.ionutradu.mongodb.employeeapp.controller;
 
 import com.ionutradu.mongodb.employeeapp.documents.Employee;
 import com.ionutradu.mongodb.employeeapp.repository.EmployeeRepository;
-import com.ionutradu.mongodb.employeeapp.services.SequenceGeneratorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,27 +16,21 @@ public class EmployeeController {
     @Autowired
     EmployeeRepository employeeRepository;
 
-    @Autowired
-    SequenceGeneratorService sequenceGeneratorService;
-
     @PostMapping()
     public Employee createEmployee(@Valid @RequestBody Employee employee) {
-        employee.setId(sequenceGeneratorService.generateSequence(Employee.SEQUENCE_NAME));
+        long nextId = Employee.getNextId();
+        employee.setId(nextId);
+        Employee.setNextId(nextId+1);
         return employeeRepository.save(employee);
     }
 
     @PutMapping()
-    public String update(@Valid @RequestBody Employee employee){
-        long nextId = sequenceGeneratorService.generateSequence(Employee.SEQUENCE_NAME);
-        if(nextId == 0){
-            throw new RuntimeException("NEXT ID is - " + nextId);
+    public String update(@RequestBody Employee employee){
+        int index = (int)employee.getId();
+        if(employeeRepository.existsById(index) == false){
+            throw new RuntimeException("Employee id not found - " + employee.getId());
         }
-        employee.setId(nextId);
-//        if(employeeRepository.existsById((int)employee.getId()) == false){
-//            throw new RuntimeException("Employee id not found - " + employee.getId());
-//        }
         checkManagerId(employee);
-
         employeeRepository.save(employee);
         return employee + " has been updated";
     }
