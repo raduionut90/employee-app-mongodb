@@ -10,7 +10,6 @@ import javax.validation.Valid;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping("/employees")
 public class EmployeeController {
@@ -22,10 +21,9 @@ public class EmployeeController {
     SequenceGeneratorService sequenceGeneratorService;
 
     @PostMapping()
-    public String save(@RequestBody Employee employee){
-        checkManagerId(employee);
-        employeeRepository.save(employee);
-        return employee.toString();
+    public Employee createEmployee(@Valid @RequestBody Employee employee) {
+        employee.setId(sequenceGeneratorService.generateSequence(Employee.SEQUENCE_NAME));
+        return employeeRepository.save(employee);
     }
 
     @PutMapping()
