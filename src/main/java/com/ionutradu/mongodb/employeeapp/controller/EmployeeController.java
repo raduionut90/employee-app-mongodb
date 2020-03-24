@@ -1,9 +1,14 @@
 package com.ionutradu.mongodb.employeeapp.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.ionutradu.mongodb.employeeapp.documents.Employee;
 import com.ionutradu.mongodb.employeeapp.repository.EmployeeRepository;
+import com.ionutradu.mongodb.employeeapp.services.IdGeneratorService;
+import com.ionutradu.mongodb.employeeapp.storage.StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.validation.Valid;
 import java.util.*;
@@ -16,11 +21,16 @@ public class EmployeeController {
     @Autowired
     EmployeeRepository employeeRepository;
 
+    @Autowired
+    IdGeneratorService idGeneratorService;
+
+    @Autowired
+    StorageService storageService;
+
     @PostMapping()
     public Employee createEmployee(@Valid @RequestBody Employee employee) {
-        long nextId = Employee.getNextId();
-        employee.setId(nextId);
-        Employee.setNextId(nextId+1);
+        checkManagerId(employee);
+        employee.setId(idGeneratorService.generateSequence(Employee.SEQUENCE_NAME));
         return employeeRepository.save(employee);
     }
 
@@ -31,8 +41,7 @@ public class EmployeeController {
             throw new RuntimeException("Employee id not found - " + employee.getId());
         }
         checkManagerId(employee);
-        employeeRepository.save(employee);
-        return employee + " has been updated";
+        return employeeRepository.save(employee) + " has been updated";
     }
 
     @GetMapping
@@ -73,6 +82,15 @@ public class EmployeeController {
                 "\n \n The manager who has the most direct employees coordinated by him is " + theManager;
 //        return department;
     }
+
+    @PostMapping("/upload")
+    public String handleFileUpload(@RequestParam("file") MultipartFile file) {
+        String filePaths = storageService.uploadFile(file);
+        List<Employee> readingResult = storageService.readFile(filePaths);
+
+        return "You successfully uploaded" + file.getOriginalFilename() + " result reading: " + readingResult;
+    }
+
 
     public Employee checkManagerEmployees(){
         List<Integer> list = employeeRepository.findAll()
@@ -120,11 +138,19 @@ public class EmployeeController {
     }
 
     public Employee maxSalaryFromDepartment(String department){
+//        checkDepartment(department);
         Employee employee = employeeRepository.findAll().stream()
                 .filter(empl -> empl.getDepartment().equals(department))
                 .max(Comparator.comparingDouble(Employee::getSalary)).get();
         return employee;
     }
+
+//    public void checkDepartment(String department){
+//        Employee[] exist = employeeRepository.findByDepartmentContains(department);
+//        if (exist == null){
+//            throw new RuntimeException(department + " department not found");
+//        }
+//    }
 
     public void checkManagerId(Employee employee){
         // managerID = 0 for employee who has no boss. Like a boos :)
