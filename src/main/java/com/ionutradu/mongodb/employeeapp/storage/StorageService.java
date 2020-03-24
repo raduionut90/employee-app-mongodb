@@ -27,7 +27,7 @@ public class StorageService {
         @Autowired
         EmployeeRepository employeeRepository;
 
-        private String curentDir = "src/main/java/com/ionutradu/mongodb/employeeapp/storage";
+        private String curentDir = "src/main/resources/json";
 
         public String uploadFile(MultipartFile file) {
 
@@ -43,19 +43,18 @@ public class StorageService {
                 return file.getOriginalFilename();
         }
 
-        public List<Employee> readFile(String path) {
-                String fullPath = "src/main/java/com/ionutradu/mongodb/employeeapp/storage/"+path;
+        public List<Employee> readFile(String fileName) {
                 // read JSON and load json
                 ObjectMapper mapper = new ObjectMapper();
                 TypeReference<List<Employee>> typeReference = new TypeReference<List<Employee>>(){};
-                InputStream inputStream = TypeReference.class.getResourceAsStream(path);
+                InputStream inputStream = TypeReference.class.getResourceAsStream("/json/" + fileName);
                 try {
-                        System.err.println(fullPath);
-                        List<Employee> employees = mapper.readValue(fullPath,typeReference);
-                        System.out.println("Users Saved!");
+                        List<Employee> employees = mapper.readValue(inputStream,typeReference);
+
+                        System.out.println("Employees list read!");
                         return employees;
                 } catch (IOException e){
-                        System.out.println("Unable to save users: " + e.getMessage());
+                        System.out.println("Unable to read Employees: " + e.getMessage());
                 }
 
                 return null;

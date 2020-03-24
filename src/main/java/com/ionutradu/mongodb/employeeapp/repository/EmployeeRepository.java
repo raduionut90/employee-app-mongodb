@@ -4,9 +4,11 @@ import com.ionutradu.mongodb.employeeapp.documents.Employee;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface EmployeeRepository extends MongoRepository<Employee, Integer>{
 
-//    public int findEmployeeByOrderByIdIdAsc(long id);
-    public Employee findByDepartmentContains(String department);
+    List<Employee> findByDepartmentIs(String department);
+    List<Employee> findByDepartmentIsAndSalaryIs(String department, double salary);
 }

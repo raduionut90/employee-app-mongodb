@@ -27,7 +27,11 @@ public class IdGeneratorService {
         IdGenerator counter = mongoOperations.findAndModify(query(where("_id").is(seqName)),
                 new Update().inc("seq", 1), options().returnNew(true).upsert(true),
                 IdGenerator.class);
-        return !Objects.isNull(counter) ? counter. getSeq() : 1;
+        return !Objects.isNull(counter) ? counter.getSeq() : 1;
 
+    }
+
+    public void resetSeq(){
+        mongoOperations.dropCollection("idGenerator");
     }
 }
