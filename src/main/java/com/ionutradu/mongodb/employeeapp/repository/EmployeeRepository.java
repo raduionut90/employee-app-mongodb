@@ -11,4 +11,5 @@ public interface EmployeeRepository extends MongoRepository<Employee, Integer>{
 
     List<Employee> findByDepartmentIs(String department);
     List<Employee> findByDepartmentIsAndSalaryIs(String department, double salary);
+    Employee findByFirstNameIs(String firstName);
 }
