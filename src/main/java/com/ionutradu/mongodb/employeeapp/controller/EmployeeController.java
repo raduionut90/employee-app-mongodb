@@ -1,15 +1,12 @@
 package com.ionutradu.mongodb.employeeapp.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.ionutradu.mongodb.employeeapp.documents.Employee;
-import com.ionutradu.mongodb.employeeapp.documents.IdGenerator;
 import com.ionutradu.mongodb.employeeapp.repository.EmployeeRepository;
 import com.ionutradu.mongodb.employeeapp.services.IdGeneratorService;
 import com.ionutradu.mongodb.employeeapp.storage.StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.validation.Valid;
 import java.util.*;
